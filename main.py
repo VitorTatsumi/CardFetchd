@@ -46,30 +46,24 @@ n = int(input('Insira a quantidade de cartas para consultar: '))
 #Abre o navegador Chrome atribuindo-o à variável
 navegador = webdriver.Chrome()
 
-for i in range(n):
-    #if (tabela['Nome'].values[1][-2:] == 'ex'):
-    navegador.get('https://www.ligapokemon.com.br/?view=cards/card&card=' + str(tabela['Nome'].values[i]) + '%20(' + str(tabela['Código'].values[i][1:4]) + '/'+ str(tabela['Código'].values[i][5:7]) + ')&ed=' + str(tabela['Coleção'].values[i]) + '&num=' + str(tabela['Código'].values[i]))
-    #else:
-        #navegador.get('https://www.ligapokemon.com.br/?view=cards/card&card=' + str(tabela['Nome'].values[1]) + '%20(' + str(tabela['Código'].values[1][1:4]) + '/'+ str(tabela['Código'].values[1][5:7]) + ')&ed=' + str(tabela['Coleção'].values[1]) + '&num=' + str(tabela['Código'].values[1]))
-        #navegador.get('https://www.ligapokemon.com.br/?view=cards/card&card=' + str(tabela['Nome'].values[2]) + '%20(' + str(tabela['Código'].values[2][1:4]) + '/'+ str(tabela['Código'].values[2][5:7]) + ')&ed=' + str(tabela['Coleção'].values[2]) + '&num=' + str(tabela['Código'].values[2]))
-    minVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[2]').get_attribute("textContent")
-    midVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[4]').get_attribute("textContent")
-    maxVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[6]').get_attribute("textContent")
-    print('Menor valor: ' + minVal + '\nValor médio: ' + midVal + '\nMaior Valor: ' + maxVal)
-    tabela.loc[tabela['Nome'] == str(tabela['Nome'].values[i]), 'Menor'] = str(minVal)
-    tabela.loc[tabela['Nome'] == tabela['Nome'].values[i], 'Medio'] = str(midVal)
-    tabela.loc[tabela['Nome'] == tabela['Nome'].values[i], 'Maximo'] = str(maxVal)
+
+def searchCard():
+    for i in range(n):
+        #if (tabela['Nome'].values[1][-2:] == 'ex'):
+        navegador.get('https://www.ligapokemon.com.br/?view=cards/card&card=' + str(tabela['Nome'].values[i]) + '%20(' + str(tabela['Código'].values[i][1:4]) + '/'+ str(tabela['Código'].values[i][5:7]) + ')&ed=' + str(tabela['Coleção'].values[i]) + '&num=' + str(tabela['Código'].values[i]))
+        #else:
+            #navegador.get('https://www.ligapokemon.com.br/?view=cards/card&card=' + str(tabela['Nome'].values[1]) + '%20(' + str(tabela['Código'].values[1][1:4]) + '/'+ str(tabela['Código'].values[1][5:7]) + ')&ed=' + str(tabela['Coleção'].values[1]) + '&num=' + str(tabela['Código'].values[1]))
+            #navegador.get('https://www.ligapokemon.com.br/?view=cards/card&card=' + str(tabela['Nome'].values[2]) + '%20(' + str(tabela['Código'].values[2][1:4]) + '/'+ str(tabela['Código'].values[2][5:7]) + ')&ed=' + str(tabela['Coleção'].values[2]) + '&num=' + str(tabela['Código'].values[2]))
+        minVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[2]').get_attribute("textContent")
+        midVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[4]').get_attribute("textContent")
+        maxVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[6]').get_attribute("textContent")
+        print('Menor valor: ' + minVal + '\nValor médio: ' + midVal + '\nMaior Valor: ' + maxVal)
+        tabela.loc[tabela['Nome'] == str(tabela['Nome'].values[i]), 'Menor'] = str(minVal)
+        tabela.loc[tabela['Nome'] == tabela['Nome'].values[i], 'Medio'] = str(midVal)
+        tabela.loc[tabela['Nome'] == tabela['Nome'].values[i], 'Maximo'] = str(maxVal)
+
+searchCard()
 time.sleep(5)
-
-minVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[2]').get_attribute("textContent")
-midVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[4]').get_attribute("textContent")
-maxVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[6]').get_attribute("textContent")
-nome = tabela['Nome'].values[2]
-
-print('Menor valor: ' + minVal + '\nValor médio: ' + midVal + '\nMaior Valor: ' + maxVal)
-tabela.loc[tabela['Nome'] == str(tabela['Nome'].values[i]), 'Menor'] = str(minVal)
-tabela.loc[tabela['Nome'] == tabela['Nome'].values[i], 'Medio'] = str(midVal)
-tabela.loc[tabela['Nome'] == tabela['Nome'].values[i], 'Maximo'] = str(maxVal)
 
 os.remove('BotTesteLiga/ptesteNovo.xlsx')
 tabela.to_excel('BotTesteLiga/ptesteNovo.xlsx', index=False)
