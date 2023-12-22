@@ -31,43 +31,24 @@ from selenium.webdriver.common.keys import Keys
 from tkinter import *
 from tkinter import ttk
 
-##################################### Início de c
-#Criação da janela
-tela = Tk()
-#Edição do título
-tela.title('Robô Liga Pókemon')
-
-texto = Label(tela, text="Clique abaixo para iniciar o robô")
-texto.grid(column=0, row= 0)
-
-frm = ttk.Frame(tela, padding=10)
-
-
-frm.grid()
-ttk.Label(frm, text="Hello World!").grid(column=0, row=0)
-ttk.Button(frm, text="Quit", command=tela.destroy).grid(column=1, row=0)
-
-
-
-
-
 
 
 #Lendo o arquivo Excel 
 tabela = pd.read_excel('BotTesteLiga\pteste.xlsx')
 df = pd.DataFrame(tabela, columns=['Nome','Código', 'Coleção', 'Menor', 'Medio', 'Maximo'])
 
-#Quantidade de cartas 
-n = int(input('Qual a quantidade de cartas para consulta?\n '))
+#Quantidade de cartas, verifica pela quantidade de linhas da tabela
+#n = int(input('Qual a quantidade de cartas para consulta?\n '))
+n = len(df.index)
 
-#Abre o navegador Chrome atribuindo-o à variável
-navegador = webdriver.Chrome()
+
 
 #Função para busca e armazenamento das cartas na tabela
-def searchCard(qtd):
+def searchCard():
+    #Abre o navegador Chrome atribuindo-o à variável
+    navegador = webdriver.Chrome()
     #Laço de repetição para verificação da quantidade de cartas previamente inserida
-    for i in range(qtd):
-
+    for i in range(n):
         #O navegador faz a busca diretamente pela URL, com os parâmetros das cartas (Nome, código, coleção, código)
         navegador.get('https://www.ligapokemon.com.br/?view=cards/card&card=' + str(tabela['Nome'].values[i]) + '%20' + str(tabela['Código'].values[i]) + '&ed=' + str(tabela['Coleção'].values[i]) + '&num=' + str(tabela['Código'].values[i]))
         #TryCatch para que o programa não seja fechado ao encontrar um erro, mas sim que exiba uma mensagem informando
@@ -77,26 +58,40 @@ def searchCard(qtd):
             midVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[4]').get_attribute("textContent")
             maxVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[6]').get_attribute("textContent")
             #Pandas localiza a célula correta à se fazer atribuição do valor das cartas. Neste caso, pegando os valores de nome, código e coleção da carta atual e comparando ela com os valores dentro das variáveis 
-            tabela.loc[tabela['Nome'] + tabela['Código'] + tabela['Coleção'] == str(tabela['Nome'].values[i]) + str(tabela['Código'].values[i]) + str(tabela['Coleção'].values[i]) , 'Menor']  = str(minVal)
-            tabela.loc[tabela['Nome'] + tabela['Código'] + tabela['Coleção'] == str(tabela['Nome'].values[i]) + str(tabela['Código'].values[i]) + str(tabela['Coleção'].values[i]), 'Medio'] = str(midVal)
-            tabela.loc[tabela['Nome'] + tabela['Código'] + tabela['Coleção'] == str(tabela['Nome'].values[i]) + str(tabela['Código'].values[i]) + str(tabela['Coleção'].values[i]), 'Maximo'] = str(maxVal)
+            tabela.loc[tabela['Nome'] + tabela['Código'] + tabela['Coleção'] == str(tabela['Nome'].values[i]) + str(tabela['Código'].values[i]) + str(tabela['Coleção'].values[i]) , 'Menor']  = str(minVal[3:])
+            tabela.loc[tabela['Nome'] + tabela['Código'] + tabela['Coleção'] == str(tabela['Nome'].values[i]) + str(tabela['Código'].values[i]) + str(tabela['Coleção'].values[i]), 'Medio'] = str(midVal[3:])
+            tabela.loc[tabela['Nome'] + tabela['Código'] + tabela['Coleção'] == str(tabela['Nome'].values[i]) + str(tabela['Código'].values[i]) + str(tabela['Coleção'].values[i]), 'Maximo'] = str(maxVal[3:])
         except:
+            pokeError["text"] += 'Pókemon: ' + str(tabela['Nome'].values[i] + str(tabela['Código'].values[i] + ' Não foi lido.\n'))
             print ('Pókemon: ' + str(tabela['Nome'].values[i] + str(tabela['Código'].values[i] + ' Não foi lido.')))
-    return time.sleep(1)
-
+    navegador.quit()
+    #Define a mensagem de texto que aparecerá ao fim da busca
+    mensagem["text"] = 'Busca realizada.\nDados salvos em ptesteNovo.xlsx'
+    os.remove('BotTesteLiga/ptesteNovo.xlsx')
+    tabela.to_excel('BotTesteLiga/ptesteNovo.xlsx', index=False)
+    return #time.sleep(1)
 
 #Chama a função que busca e armazena a carta na tabela
-searchCard(n)
-navegador.quit()
-print('Busca realizada.\nDados salvos em ptesteNovo.xlsx')
-os.remove('BotTesteLiga/ptesteNovo.xlsx')
-tabela.to_excel('BotTesteLiga/ptesteNovo.xlsx', index=False)
+#searchCard(n)
 
+##################################### Início de c
+#Criação da janela
+#Interface gráfica TKinter
+tela = Tk()
+#Edição do título
+tela.title("CardFetch'd")
+#Tamanho inicial da tela
+tela.geometry("250x200")
+#Elementos da tela
+texto = Label(tela, text="Clique abaixo para iniciar a busca de cartas").grid(column=0, row= 1, padx=10, pady=10)
+botaoPesquisa = Button(tela, text="Pesquisar", command=searchCard).grid(column=0, row=2, padx=10, pady=10)
+botaoFechar = Button(tela, text="Fechar", command=tela.destroy).grid(column=0, row=3, padx=10, pady=10)
+pokeError = Label(tela, text="")
+pokeError.grid(column=0, row=5, padx=10, pady=10)
+mensagem = Label(tela, text="")
+mensagem.grid(column=0, row=6, padx=10, pady=10)
 #Deixa a tela exibida
 tela.mainloop()
-
-
-
 
 ############################################################################################################################
 ####                                                                                                                    ####    
