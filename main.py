@@ -3,11 +3,11 @@
 #### Definir como padrão (Excel):                                                                                       ####
 #### NomeDoPokemon-VSTAR ao invés de NomeDoPokemon-V-Astro                                                              ####
 #### Nomes em inglês. Ex: Flying Pikachu ao invés de Pikachu Voador                                                     ####    
-#### Não faz busca por raridades acima de UR, nem por cartas PROMO                                                      ####
-#### Não faz busca por nenhum tipo de carta além de Pokemons                                                            ####
-#### Pokemons EX antigos deverão ser inseridos com -EX e Pokemons ex novos deverão ser inseridos sem o    ############################################################################################################################
-
-
+####                                                                                                                    ####
+####                                                                                                                    ####
+####                                                                                                                    #### 
+############################################################################################################################
+ 
 ############################################################################################################################
 ####                                                                                                                    ####    
 ####                                                                                                                    ####
@@ -34,8 +34,8 @@ from tkinter import ttk
 
 
 #Lendo o arquivo Excel 
-tabela = pd.read_excel('BotTesteLiga\pteste.xlsx')
-df = pd.DataFrame(tabela, columns=['Nome','Código', 'Coleção', 'Menor', 'Medio', 'Maximo'])
+tabela = pd.read_excel('CardFetchd\CardFetchd_Principal.xlsx')
+df = pd.DataFrame(tabela, columns=['Nome','Código', 'Coleção', 'Menor', 'Medio', 'Maximo', 'Qualidade'])
 
 #Quantidade de cartas, verifica pela quantidade de linhas da tabela
 #n = int(input('Qual a quantidade de cartas para consulta?\n '))
@@ -45,6 +45,9 @@ n = len(df.index)
 
 #Função para busca e armazenamento das cartas na tabela
 def searchCard():
+    #Limpa o histórico de erros
+    pokeError["text"] == ''
+
     #Abre o navegador Chrome atribuindo-o à variável
     navegador = webdriver.Chrome()
     #Laço de repetição para verificação da quantidade de cartas previamente inserida
@@ -57,18 +60,40 @@ def searchCard():
             minVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[2]').get_attribute("textContent")
             midVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[4]').get_attribute("textContent")
             maxVal = navegador.find_element('xpath', '/html/body/main/div[4]/div[1]/div/div[3]/div[2]/div/div[6]').get_attribute("textContent")
-            #Pandas localiza a célula correta à se fazer atribuição do valor das cartas. Neste caso, pegando os valores de nome, código e coleção da carta atual e comparando ela com os valores dentro das variáveis 
+            try:
+                qualidade = navegador.find_element('xpath', '/html/body/main/div[6]/div[3]/div[1]/div[5]/div[5]').get_attribute("textContent")
+            except:
+                try:
+                    qualidade = navegador.find_element('xpath', '/html/body/main/div[6]/div[3]/div[1]/div[6]/div[5]').get_attribute("textContent")
+                except:
+                    try:
+                        qualidade = navegador.find_element('xpath', '/html/body/main/div[7]/div[3]/div[1]/div[5]/div[5]').get_atribute("textContent")
+                    except:
+                        try:
+                            qualidade = navegador.find_element('xpath', '/html/body/main/div[7]/div[3]/div[1]/div[6]/div[5]').get_atribute("textContent")
+                        except:
+                            try:
+                                qualidade = navegador.find_element('xpath', '/html/body/main/div[7]/div[3]/div[1]/div[6]/div[5]').get_atribute("textContent")
+                            except: 
+                                qualidade = 'N/E'
+
+            #Pandas localiza a célula correta à se fazer atribuição do valor das cartas. Neste caso, pegando os valores de nome, código e coleção da carta atual e comparando ela com os valores dentro das variáveis  
             tabela.loc[tabela['Nome'] + tabela['Código'] + tabela['Coleção'] == str(tabela['Nome'].values[i]) + str(tabela['Código'].values[i]) + str(tabela['Coleção'].values[i]) , 'Menor']  = str(minVal[3:])
             tabela.loc[tabela['Nome'] + tabela['Código'] + tabela['Coleção'] == str(tabela['Nome'].values[i]) + str(tabela['Código'].values[i]) + str(tabela['Coleção'].values[i]), 'Medio'] = str(midVal[3:])
             tabela.loc[tabela['Nome'] + tabela['Código'] + tabela['Coleção'] == str(tabela['Nome'].values[i]) + str(tabela['Código'].values[i]) + str(tabela['Coleção'].values[i]), 'Maximo'] = str(maxVal[3:])
+            tabela.loc[tabela['Nome'] + tabela['Código'] + tabela['Coleção'] == str(tabela['Nome'].values[i]) + str(tabela['Código'].values[i]) + str(tabela['Coleção'].values[i]), 'Qualidade'] = str(qualidade)
+
         except:
             pokeError["text"] += 'Pókemon: ' + str(tabela['Nome'].values[i] + str(tabela['Código'].values[i] + ' Não foi lido.\n'))
-            print ('Pókemon: ' + str(tabela['Nome'].values[i] + str(tabela['Código'].values[i] + ' Não foi lido.')))
+            #print ('Pókemon: ' + str(tabela['Nome'].values[i] + str(tabela['Código'].values[i] + ' Não foi lido.')))
     navegador.quit()
     #Define a mensagem de texto que aparecerá ao fim da busca
-    mensagem["text"] = 'Busca realizada.\nDados salvos em ptesteNovo.xlsx'
-    os.remove('BotTesteLiga/ptesteNovo.xlsx')
-    tabela.to_excel('BotTesteLiga/ptesteNovo.xlsx', index=False)
+    mensagem["text"] = 'Busca realizada.\nDados salvos em CardFetchdResultsXLSX.xlsx\nDados salvos em CardFetchdResultsCSV.csv'
+    os.remove('CardFetchd/CardFetchdResultsXLSX.xlsx')
+    os.remove('CardFetchd/CardFetchdResultsCSV.csv')
+
+    tabela.to_csv('CardFetchd/CardFetchdResultsCSV.csv', index=False)
+    tabela.to_excel('CardFetchd/CardFetchdResultsXLSX.xlsx', index=False)
     return #time.sleep(1)
 
 #Chama a função que busca e armazena a carta na tabela
@@ -81,8 +106,10 @@ tela = Tk()
 #Edição do título
 tela.title("CardFetch'd")
 #Tamanho inicial da tela
-tela.geometry("250x200")
+#tela.geometry("250x200")
 #Elementos da tela
+#Grid para determinar onde serão localizados os ite
+
 texto = Label(tela, text="Clique abaixo para iniciar a busca de cartas").grid(column=0, row= 1, padx=10, pady=10)
 botaoPesquisa = Button(tela, text="Pesquisar", command=searchCard).grid(column=0, row=2, padx=10, pady=10)
 botaoFechar = Button(tela, text="Fechar", command=tela.destroy).grid(column=0, row=3, padx=10, pady=10)
